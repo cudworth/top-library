@@ -1,0 +1,24 @@
+.InputForm {
+  text-align: center;
+  background-color: white;
+  position: absolute;
+  top: 140px;
+  left: 20px;
+  width: 280px;
+  z-index: 1;
+  border-radius: 8px;
+}
+
+.InputForm div {
+  padding: 8px;
+}
+
+.InputForm span {
+  padding: 8px;
+}
+
+.input-text {
+  width: 25ch;
+  height: 1em;
+  padding: 0.5em;
+}

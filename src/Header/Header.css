@@ -1,0 +1,26 @@
+.Header {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  right: 20px;
+  height: 100px;
+  font-family: 'Caveat', cursive;
+  z-index: 2;
+}
+
+.Header h1 {
+  padding: 4px;
+  font-size: 48px;
+  font-weight: 800;
+  color: white;
+  text-shadow: 0 0 6px rgba(0, 0, 0, 1);
+}
+
+.Header h2 {
+  padding: 4px;
+  font-size: 26px;
+  font-weight: 400;
+  font-style: italic;
+  text-shadow: 0 0 6px rgba(0, 0, 0, 1);
+  color: white;
+}

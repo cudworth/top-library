@@ -1,0 +1,39 @@
+.App {
+  position: fixed;
+  width: 100vw;
+  height: 100vh;
+  text-align: left;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  background-image: url('./books.jpg');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+input {
+  font-weight: 400;
+  margin: 4px;
+}
+
+.card-cabinet {
+  overflow: auto;
+  position: absolute;
+  top: 140px;
+  bottom: 20px;
+  left: 320px;
+  right: 20px;
+}
+
+.button {
+  background-color: white;
+  color: black;
+  padding: 1em;
+  border: 2px solid rgb(200, 200, 200);
+  border-radius: 0.5em;
+}
+
+.button:hover {
+  border-color: rgb(60, 60, 185);
+}

@@ -1,0 +1,21 @@
+.Card {
+  position: relative;
+  background-color: white;
+  z-index: 0;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.Card div {
+  padding: 8px;
+}
+
+.Card input {
+  margin: 4px;
+}
+
+.Card-buttons {
+  position: absolute;
+  right: 0;
+  top: 0;
+}
