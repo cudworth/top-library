@@ -4,18 +4,14 @@ import './App.css';
 import Header from './Header/Header';
 import InputForm from './InputForm/InputForm';
 import Card from './Card/Card';
-
+import firebaseModule from './firebaseModule';
 import _ from 'lodash';
 
-const savedLibrary = JSON.parse(localStorage.getItem('library'));
+//const savedLibrary = JSON.parse(localStorage.getItem('library'));
+
+const myFirebase = firebaseModule();
 
 function App() {
-  const [library, setLibrary] = useState(_.cloneDeep(savedLibrary) || []);
-
-  useEffect(() => {
-    localStorage.setItem('library', JSON.stringify(library));
-  }, [library]);
-
   const bookTemplate = {
     title: '',
     author: '',
@@ -24,6 +20,35 @@ function App() {
   };
 
   const [data, setData] = useState(bookTemplate);
+  const [library, setLibrary] = useState([]);
+
+  //Initialize app with latest copy of library ID's from Firestore
+  useEffect(() => {
+    getLibrary();
+  }, []);
+
+  //TODO: REVISE USESTATE
+
+  //const [library, setLibrary] = useState(_.cloneDeep(savedLibrary) || []);
+
+  /*
+  useEffect(() => {
+    //localStorage.setItem('library', JSON.stringify(library));
+  }, [library]);
+  */
+
+  function getLibrary() {
+    myFirebase.loadFromFirestore().then(
+      ([uids, data]) => {
+        //setLibrary(() => ids);
+        console.log(uids);
+        console.log(data);
+      },
+      (reject) => {
+        console.log('error occured loading ids from firebase');
+      }
+    );
+  }
 
   function handleChange(e) {
     e.persist(); //Makes persistent event, otherwise synthetic event will be destroyed prior to asynchronous setData method completion
@@ -35,7 +60,17 @@ function App() {
   }
 
   function createBook() {
-    setLibrary((library) => [...library, data]);
+    /*
+    Promise.resolve(myFirebase.saveToFirestore(data)).then(
+      (id) => {
+        setLibrary((library) => [...library, data]);
+      },
+      (fail) => {
+        console.log('fail');
+      }
+    );
+    */
+    //myFirebase.loadFromFirestore();
     setData(bookTemplate);
   }
 
