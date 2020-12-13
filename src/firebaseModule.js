@@ -11,20 +11,17 @@ function firebaseModule() {
   function signIn() {
     // Sign into Firebase using popup auth & Google as the identity provider.
     var provider = new firebase.auth.GoogleAuthProvider();
-    firebase.auth().signInWithPopup(provider);
+    return firebase.auth().signInWithPopup(provider);
   }
 
   function signOut() {
     // Sign out of Firebase.
-    firebase.auth().signOut();
+    return firebase.auth().signOut();
   }
 
-  function initFirebaseAuth() {
+  function initFirebaseAuth(cb) {
     // Listen to auth state changes.
-    //firebase.auth().onAuthStateChanged(authStateObserver);
-    firebase.auth().onAuthStateChanged(() => {
-      console.log('auth state changed');
-    });
+    return firebase.auth().onAuthStateChanged(cb);
   }
 
   function getUserName() {
@@ -35,48 +32,83 @@ function firebaseModule() {
     return !!firebase.auth().currentUser;
   }
 
-  // Saves a new message to your Cloud Firestore database.
-  function saveToFirestore(data) {
+  function create(collection, document) {
     // Add a new message entry to the database.
     return myFirestore
-      .collection('library')
-      .add(data)
-      .then((docRef) => docRef.id)
-      .catch(function (error) {
-        console.error('Error writing new message to database', error);
+      .collection(collection)
+      .add(document)
+      .then((docRef) => {
+        return docRef.id;
+      })
+      .catch((error) => {
+        console.error('Error writing data to database', error);
       });
   }
 
-  // Loads chat messages history and listens for upcoming ones.
-  function loadFromFirestore(messageID) {
-    if (messageID) {
+  function read(collection, uid) {
+    if (uid) {
       return firebase
         .firestore()
-        .collection('library')
-        .doc(messageID)
+        .collection(collection)
+        .doc(uid)
         .get()
         .then(console.log('individual doc retrieval not implemented'));
     } else {
       return firebase
         .firestore()
-        .collection('library')
+        .collection(collection)
         .get()
         .then((qs) => {
-          const uids = [];
-          const data = [];
+          const obj = {};
           qs.forEach((qds) => {
-            uids.push(qds.id);
-            data.push(qds.data());
+            obj[qds.id] = qds.data();
           });
-          return [uids, data];
+          return obj;
         });
     }
-    // Create the query to load the last 12 messages and listen for new ones.
-    //var query = firebase.firestore().collection('library');
-    //.orderBy('timestamp', 'desc')
-    //.limit(12);
+  }
 
-    /*
+  function update(collection, uid, data) {
+    return firebase
+      .firestore()
+      .collection(collection)
+      .doc(uid)
+      .set(data)
+      .catch((error) => console.error(error));
+  }
+
+  function destroy(collection, uid) {
+    return firebase
+      .firestore()
+      .collection(collection)
+      .doc(uid)
+      .delete()
+      .catch((error) => {
+        console.error(error);
+      });
+  }
+
+  return {
+    signIn,
+    signOut,
+    initFirebaseAuth,
+    getUserName,
+    isUserSignedIn,
+    create,
+    read,
+    update,
+    destroy,
+  };
+}
+
+export default firebaseModule;
+
+// Create the query to load the last 12 messages and listen for new ones.
+//var query = firebase.firestore().collection('library');
+//.orderBy('timestamp', 'desc')
+//.limit(12);
+
+/*
     // Start listening to the query.
     query.onSnapshot(function (snapshot) {
       snapshot.docChanges().forEach(function (change) {
@@ -96,20 +128,6 @@ function firebaseModule() {
       });
     });
     */
-  }
-
-  return {
-    signIn,
-    signOut,
-    initFirebaseAuth,
-    getUserName,
-    isUserSignedIn,
-    saveToFirestore,
-    loadFromFirestore,
-  };
-}
-
-export default firebaseModule;
 
 /* 
 function authStateObserver(user) {

@@ -2,13 +2,6 @@ import React from 'react';
 import './InputForm.css';
 
 function InputForm(props) {
-  /*
-  const [title, setTitle] = useState('');
-  const [author, setAuthor] = useState('');
-  const [pages, setPages] = useState('');
-  const [read, setRead] = useState(false);
-  */
-
   const { title, author, pages, read } = props.data;
 
   return (

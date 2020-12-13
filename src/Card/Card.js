@@ -16,13 +16,13 @@ function Card(props) {
           className="button"
           type="button"
           value={readValue}
-          onClick={() => props.toggleRead(props.book)}
+          onClick={() => props.toggleRead()}
         ></input>
         <input
           className="button"
           type="button"
           value="Delete"
-          onClick={() => props.destroyBook(props.book)}
+          onClick={() => props.destroyBook()}
         ></input>
       </div>
     </div>

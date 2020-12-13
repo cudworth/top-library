@@ -7,8 +7,6 @@ import Card from './Card/Card';
 import firebaseModule from './firebaseModule';
 import _ from 'lodash';
 
-//const savedLibrary = JSON.parse(localStorage.getItem('library'));
-
 const myFirebase = firebaseModule();
 
 function App() {
@@ -19,30 +17,20 @@ function App() {
     read: 'read',
   };
 
-  const [data, setData] = useState(bookTemplate);
-  const [library, setLibrary] = useState([]);
+  const [book, setBook] = useState(bookTemplate);
 
-  //Initialize app with latest copy of library ID's from Firestore
+  const [library, setLibrary] = useState({});
+
+  const [auth, setAuth] = useState(false);
+
   useEffect(() => {
-    getLibrary();
+    Promise.resolve(myFirebase.initFirebaseAuth(getAuth)).then(() => getAuth());
   }, []);
 
-  //TODO: REVISE USESTATE
-
-  //const [library, setLibrary] = useState(_.cloneDeep(savedLibrary) || []);
-
-  /*
-  useEffect(() => {
-    //localStorage.setItem('library', JSON.stringify(library));
-  }, [library]);
-  */
-
   function getLibrary() {
-    myFirebase.loadFromFirestore().then(
-      ([uids, data]) => {
-        //setLibrary(() => ids);
-        console.log(uids);
-        console.log(data);
+    myFirebase.read('library').then(
+      (data) => {
+        setLibrary(() => data);
       },
       (reject) => {
         console.log('error occured loading ids from firebase');
@@ -51,8 +39,8 @@ function App() {
   }
 
   function handleChange(e) {
-    e.persist(); //Makes persistent event, otherwise synthetic event will be destroyed prior to asynchronous setData method completion
-    setData((prevData) => {
+    e.persist(); //Makes persistent event, otherwise synthetic event will be destroyed prior to asynchronous setBook method completion
+    setBook((prevData) => {
       const newData = _.cloneDeep(prevData);
       newData[e.target.name] = e.target.value;
       return newData;
@@ -60,62 +48,94 @@ function App() {
   }
 
   function createBook() {
-    /*
-    Promise.resolve(myFirebase.saveToFirestore(data)).then(
-      (id) => {
-        setLibrary((library) => [...library, data]);
-      },
-      (fail) => {
-        console.log('fail');
-      }
-    );
-    */
-    //myFirebase.loadFromFirestore();
-    setData(bookTemplate);
+    myFirebase
+      .create('library', book)
+      .then((uid) => {
+        setLibrary((prev) => {
+          const next = _.cloneDeep(prev);
+          next[uid] = book;
+          return next;
+        });
+      })
+      .then(() => setBook(bookTemplate));
   }
 
-  function destroyBook(book) {
-    const index = library.indexOf(book);
-    setLibrary((prevLibrary) => {
-      const newLibrary = _.cloneDeep(prevLibrary);
-      newLibrary.splice(index, 1);
-      return newLibrary;
+  function destroyBook() {
+    setLibrary((prev) => {
+      const next = _.cloneDeep(prev);
+      delete next[this];
+      myFirebase.destroy('library', this);
+      return next;
     });
   }
 
-  function toggleRead(book) {
-    const index = library.indexOf(book);
-    setLibrary((prevLibrary) => {
-      const newLibrary = _.cloneDeep(prevLibrary);
-      newLibrary[index].read =
-        newLibrary[index].read === 'unread' ? 'read' : 'unread';
-      return newLibrary;
+  function toggleRead() {
+    setLibrary((prev) => {
+      const next = _.cloneDeep(prev);
+      next[this].read = 'read' === next[this].read ? 'unread' : 'read';
+      myFirebase.update('library', this, next[this]);
+      return next;
     });
   }
 
-  return (
-    <div className="App">
-      <Header />
+  function getAuth() {
+    setAuth(() => myFirebase.isUserSignedIn());
+  }
 
-      <InputForm
-        data={data}
-        handleChange={handleChange}
-        onSubmit={createBook}
-      />
-      <div className="card-cabinet">
-        {library.map((book, index) => {
-          return (
-            <Card
-              key={index}
-              book={book}
-              destroyBook={destroyBook}
-              toggleRead={toggleRead}
-            />
-          );
-        })}
+  function handleSignIn() {
+    myFirebase.signIn().then(() => {
+      getLibrary();
+    });
+  }
+
+  function handleSignOut() {
+    myFirebase.signOut().then(() => {
+      console.log(library);
+      //setLibrary(() => {});
+    });
+  }
+
+  if (!auth) {
+    return (
+      <div className="App">
+        <Header
+          auth={myFirebase.isUserSignedIn}
+          signIn={handleSignIn}
+          signOut={handleSignOut}
+          user={myFirebase.getUserName}
+        />
       </div>
-    </div>
-  );
+    );
+  } else {
+    return (
+      <div className="App">
+        <Header
+          auth={myFirebase.isUserSignedIn}
+          signIn={handleSignIn}
+          signOut={handleSignOut}
+          user={myFirebase.getUserName}
+        />
+
+        <InputForm
+          data={book}
+          handleChange={handleChange}
+          onSubmit={createBook}
+        />
+        <div className="card-cabinet">
+          {Object.keys(library).map((key) => {
+            return (
+              <Card
+                key={key}
+                book={library[key]}
+                destroyBook={destroyBook.bind(key)}
+                toggleRead={toggleRead.bind(key)}
+              />
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
 }
 
 export default App;
